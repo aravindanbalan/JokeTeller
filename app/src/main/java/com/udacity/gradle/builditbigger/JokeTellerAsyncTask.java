@@ -22,9 +22,15 @@ import java.io.IOException;
 public class JokeTellerAsyncTask extends AsyncTask<Void, Void, String> {
     private JokeTellerApi myApiService = null;
     private Context context;
+    private OnAsyncTaskCompleteListener mListener;
 
     public JokeTellerAsyncTask(Context context) {
         this.context = context;
+    }
+
+    public JokeTellerAsyncTask(Context context, OnAsyncTaskCompleteListener listener) {
+        this.context = context;
+        mListener = listener;
     }
 
     @Override
@@ -53,11 +59,18 @@ public class JokeTellerAsyncTask extends AsyncTask<Void, Void, String> {
     @Override
     protected void onPostExecute(String result) {
         if (!TextUtils.isEmpty(result)) {
+            if (mListener != null) {
+                mListener.onComplete(result);
+            }
             Intent intent = new Intent(context, JokeTellerDisplayActivity.class);
             intent.putExtra(JokeTellerDisplayActivity.KEY_JOKE, result);
             context.startActivity(intent);
         } else {
             Toast.makeText(context, "Error, Backend server not responding", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public static interface OnAsyncTaskCompleteListener {
+        public void onComplete(String result);
     }
 }
